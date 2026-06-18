@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>G7 海报生成工作台</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">G7</div>
+        <div>
+          <strong>海报生成工作台</strong>
+          <span>紫宝盒 · 主动治理</span>
+        </div>
+      </div>
+      <nav>
+        <button class="nav active" data-view="generator">生成海报</button>
+        <button class="nav" data-view="manual">使用手册</button>
+        <button class="nav" data-view="records">生图记录</button>
+        <button class="nav" data-view="rubric">评估标准</button>
+        <button class="nav" data-view="design">设计建议</button>
+      </nav>
+    </aside>
+    <main>
+      <section id="generator" class="view active">
+        <header>
+          <h1>生成海报</h1>
+          <p>先生成完整 Prompt，确认或上传参考图后再执行生图。</p>
+        </header>
+        <div class="grid two">
+          <div class="panel">
+            <label>用户需求</label>
+            <textarea id="demand" placeholder="粘贴用户的几句话需求，例如：标题、两个副标题、行业场景等。"></textarea>
+            <div class="row">
+              <label class="check"><input id="hasReference" type="checkbox" /> 已有参考图/Logo/二维码待上传</label>
+            </div>
+            <div class="uploadBox">
+              <label for="referenceFiles">上传参考图</label>
+              <input id="referenceFiles" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml" multiple />
+              <div class="actions compact">
+                <button id="uploadReference" type="button">上传并预览</button>
+                <button id="clearReferences" type="button">清空本次参考图</button>
+              </div>
+              <div id="referencePreview" class="referencePreview">尚未上传参考图。</div>
+            </div>
+            <div class="actions">
+              <button id="makePrompt" class="primary">生成完整 Prompt</button>
+              <button id="renderLocal">确认并生成本地示例海报</button>
+            </div>
+            <div id="analysis" class="hint"></div>
+          </div>
+          <div class="panel">
+            <label>完整生图 Prompt</label>
+            <textarea id="prompt" class="prompt" placeholder="这里会生成完整 Prompt，确认后再生图。"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <section id="manual" class="view">
+        <header>
+          <h1>使用手册</h1>
+          <p>网站按项目 SOP 工作：先出 Prompt，再确认/参考图，最后生图。</p>
+        </header>
+        <div id="manualContent" class="doc"></div>
+      </section>
+
+      <section id="records" class="view">
+        <header>
+          <h1>生图记录</h1>
+          <p>这里只展示最终海报图片，不展示 Markdown 生成记录。</p>
+        </header>
+        <div id="recordGrid" class="records"></div>
+      </section>
+
+      <section id="rubric" class="view editor" data-file="rubric">
+        <header>
+          <h1>优秀海报评估标准</h1>
+          <p>修改后会写回项目根目录的 Markdown 文件。</p>
+        </header>
+        <textarea class="fileEditor"></textarea>
+        <button class="save primary">保存评估标准</button>
+      </section>
+
+      <section id="design" class="view editor" data-file="design">
+        <header>
+          <h1>海报设计建议</h1>
+          <p>维护品牌视觉、信息层级和设计方向。</p>
+        </header>
+        <textarea class="fileEditor"></textarea>
+        <button class="save primary">保存设计建议</button>
+      </section>
+    </main>
+    <script src="/app.js"></script>
+  </body>
+</html>

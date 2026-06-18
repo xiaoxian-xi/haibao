@@ -1,0 +1,25 @@
+.DS_Store
+.codex/
+.agents/
+node_modules/
+
+# Internal workflow and knowledge files stay local.
+AGENT.md
+产品知识库.md
+优秀海报评估标准.md
+卖点表达库.md
+海报生图任务SOP.md
+海报设计建议.md
+生图提示词模板.md
+用户追问规则.md
+资料索引.md
+生图记录/
+
+# Large or private source materials are kept local for the knowledge base.
+方案库/
+行业方案核心场景和素材/
+参考图上传/
+生图结果/
+
+# Runtime artifacts
+*.log
