@@ -69,6 +69,23 @@ function parseReferences(input) {
     : [];
 }
 
+function isTemporaryScenario(scenario) {
+  return scenario.industry === "临时需求";
+}
+
+function buildFollowupQuestions(demand) {
+  const text = String(demand || "");
+  const questions = [
+    "这张海报主要给谁看？例如客户、司机、车队老板、安全员、内部员工等。",
+    "希望用户看完后做什么？例如了解方案、扫码咨询、参加活动、内部宣导等。",
+    "有没有必须出现的素材或信息？例如产品名、Logo、二维码、联系方式、产品图、参考图等。",
+  ];
+  if (!/(产品|方案|活动|培训|宣传|招聘|发布|促销|招商)/.test(text)) {
+    questions.splice(1, 0, "这张海报最想突出什么核心卖点或场景？");
+  }
+  return questions.slice(0, 3);
+}
+
 function today() {
   const d = new Date();
   const yyyy = d.getFullYear();
@@ -163,9 +180,16 @@ function makePrompt(demand, options = {}) {
   const scenario = matchScenario(demand);
   const extracted = extractTitles(demand);
   const references = parseReferences(options.references);
-  const title = extracted.title || `让${scenario.scene}风险在事故前被看见`;
+  const followupAnswers = String(options.followupAnswers || "").trim();
+  const temporary = isTemporaryScenario(scenario);
+  const title = extracted.title || (temporary ? "让核心价值被一眼看见" : `让${scenario.scene}风险在事故前被看见`);
   const subtitles = extracted.subtitles.length
     ? extracted.subtitles
+    : temporary
+    ? [
+        "基于目标受众、海报目的和素材要求建立一次性 Brief。",
+        "不虚构产品参数、客户案例或效果承诺，先保证信息准确可控。",
+      ]
     : [
         scenario.value,
         "车机预警、平台推送、实时干预，形成从识别到处置的闭环。",
@@ -179,10 +203,10 @@ function makePrompt(demand, options = {}) {
   return `请生成一张高质量中文产品宣传海报。
 
 【海报目标】
-围绕“${scenario.industry} / ${scenario.scene}”生成一张 B2B 产品宣传海报，让目标用户快速理解痛点、产品能力和业务价值。
+${temporary ? `根据用户临时需求生成一张中文宣传海报。用户原始需求：${demand}${followupAnswers ? `\n用户追问补充：${followupAnswers}` : ""}` : `围绕“${scenario.industry} / ${scenario.scene}”生成一张 B2B 产品宣传海报，让目标用户快速理解痛点、产品能力和业务价值。`}
 
 【目标受众】
-${scenario.audience}
+${temporary && followupAnswers ? `以用户追问回答为准：\n${followupAnswers}` : scenario.audience}
 
 【行业与场景】
 行业：${scenario.industry}
@@ -321,10 +345,21 @@ async function handleApi(req, res) {
     const body = JSON.parse(await readBody(req) || "{}");
     const demand = String(body.demand || "");
     const references = parseReferences(body.references);
-    const prompt = makePrompt(demand, { hasReference: Boolean(body.hasReference), references });
+    const followupAnswers = String(body.followupAnswers || "").trim();
     const scenario = matchScenario(demand);
+    if (isTemporaryScenario(scenario) && !followupAnswers) {
+      return send(res, 200, {
+        scenario,
+        requiresFollowup: true,
+        questions: buildFollowupQuestions(demand),
+        prompt: "",
+        nextStep: "该需求未命中固定知识库，需要先回答追问问题。回答后再生成完整 Prompt，并继续检查 Prompt、上传参考图或确认生图。",
+      });
+    }
+    const prompt = makePrompt(demand, { hasReference: Boolean(body.hasReference), references, followupAnswers });
     return send(res, 200, {
       scenario,
+      requiresFollowup: false,
       title: extractTitles(demand).title || `让${scenario.scene}风险在事故前被看见`,
       prompt,
       nextStep: references.length

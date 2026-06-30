@@ -102,6 +102,7 @@ button.primary {
 }
 button:hover { filter: brightness(.98); }
 .hint { margin-top: 14px; color: var(--muted); line-height: 1.7; white-space: pre-wrap; }
+.hidden { display: none !important; }
 .uploadBox {
   margin: 12px 0 14px;
   padding: 14px;
@@ -145,6 +146,23 @@ button:hover { filter: brightness(.98); }
   color: var(--muted);
   font-size: 12px;
   word-break: break-all;
+}
+.followupBox {
+  margin: 12px 0 14px;
+  padding: 14px;
+  border: 1px solid rgba(78, 14, 165, .24);
+  border-radius: 8px;
+  background: #faf8ff;
+}
+.followupBox ol {
+  margin: 0 0 10px 18px;
+  padding: 0;
+  color: var(--ink);
+  line-height: 1.65;
+}
+.followupBox textarea {
+  min-height: 150px;
+  background: #fff;
 }
 .doc {
   white-space: pre-wrap;

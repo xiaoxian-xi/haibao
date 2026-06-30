@@ -33,9 +33,6 @@
           <div class="panel">
             <label>用户需求</label>
             <textarea id="demand" placeholder="粘贴用户的几句话需求，例如：标题、两个副标题、行业场景等。"></textarea>
-            <div class="row">
-              <label class="check"><input id="hasReference" type="checkbox" /> 已有参考图/Logo/二维码待上传</label>
-            </div>
             <div class="uploadBox">
               <label for="referenceFiles">上传参考图</label>
               <input id="referenceFiles" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml" multiple />
@@ -44,6 +41,11 @@
                 <button id="clearReferences" type="button">清空本次参考图</button>
               </div>
               <div id="referencePreview" class="referencePreview">尚未上传参考图。</div>
+            </div>
+            <div id="followupBox" class="followupBox hidden">
+              <label for="followupAnswers">需要补充的信息</label>
+              <ol id="followupQuestions"></ol>
+              <textarea id="followupAnswers" placeholder="请按上面问题补充回答。回答后再次点击“生成完整 Prompt”。"></textarea>
             </div>
             <div class="actions">
               <button id="makePrompt" class="primary">生成完整 Prompt</button>

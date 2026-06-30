@@ -1,6 +1,7 @@
 const $ = (s, root = document) => root.querySelector(s);
 const $$ = (s, root = document) => [...root.querySelectorAll(s)];
 let uploadedReferences = [];
+let pendingFollowup = false;
 
 async function api(path, options = {}) {
   const res = await fetch(path, {
@@ -56,6 +57,12 @@ function renderReferencePreview() {
   `).join("");
 }
 
+function renderFollowup(questions = []) {
+  pendingFollowup = Boolean(questions.length);
+  $("#followupBox").classList.toggle("hidden", !pendingFollowup);
+  $("#followupQuestions").innerHTML = questions.map((question) => `<li>${escapeHtml(question)}</li>`).join("");
+}
+
 $("#uploadReference").addEventListener("click", async () => {
   const files = [...$("#referenceFiles").files];
   if (!files.length) return alert("请先选择参考图。");
@@ -71,7 +78,6 @@ $("#uploadReference").addEventListener("click", async () => {
     });
     uploadedReferences.push(uploaded);
   }
-  $("#hasReference").checked = true;
   $("#referenceFiles").value = "";
   renderReferencePreview();
   $("#analysis").textContent = "参考图已上传。请重新生成完整 Prompt，让参考图清单进入最终生图提示词。";
@@ -79,7 +85,6 @@ $("#uploadReference").addEventListener("click", async () => {
 
 $("#clearReferences").addEventListener("click", () => {
   uploadedReferences = [];
-  $("#hasReference").checked = false;
   renderReferencePreview();
   $("#analysis").textContent = "已清空本次参考图。";
 });
@@ -87,10 +92,18 @@ $("#clearReferences").addEventListener("click", () => {
 $("#makePrompt").addEventListener("click", async () => {
   const demand = $("#demand").value.trim();
   if (!demand) return alert("请先输入用户需求。");
+  const followupAnswers = $("#followupAnswers").value.trim();
   const data = await api("/api/prompt", {
     method: "POST",
-    body: JSON.stringify({ demand, hasReference: $("#hasReference").checked, references: uploadedReferences }),
+    body: JSON.stringify({ demand, hasReference: Boolean(uploadedReferences.length), references: uploadedReferences, followupAnswers }),
   });
+  if (data.requiresFollowup) {
+    $("#prompt").value = "";
+    renderFollowup(data.questions);
+    $("#analysis").textContent = `匹配：${data.scenario.industry} / ${data.scenario.scene}\n需要先回答追问问题，再生成完整 Prompt。\n下一步：${data.nextStep}`;
+    return;
+  }
+  renderFollowup([]);
   $("#prompt").value = data.prompt;
   $("#analysis").textContent = `匹配：${data.scenario.industry} / ${data.scenario.scene}\n下一步：${data.nextStep}`;
 });
@@ -98,6 +111,10 @@ $("#makePrompt").addEventListener("click", async () => {
 $("#renderLocal").addEventListener("click", async () => {
   const demand = $("#demand").value.trim();
   if (!demand) return alert("请先输入用户需求。");
+  if (pendingFollowup && !$("#prompt").value.trim()) {
+    alert("该临时需求需要先回答追问问题，再生成完整 Prompt。");
+    return;
+  }
   if (!$("#prompt").value.trim()) {
     alert("请先生成完整 Prompt，确认后再生成本地示例海报。");
     return;
